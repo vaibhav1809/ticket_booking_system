@@ -8,7 +8,7 @@ from typing import Sequence
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Ticket
+from ..db.models import Ticket
 from .interfaces import ITicketsRepo
 
 

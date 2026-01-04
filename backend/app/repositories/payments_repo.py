@@ -8,7 +8,7 @@ from typing import Any
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Payment, PaymentStatus
+from ..db.models import Payment, PaymentStatus
 from .interfaces import IPaymentsRepo
 
 

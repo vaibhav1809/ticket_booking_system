@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, Optional, Protocol, Sequence, runtime_checkable
 from datetime import datetime
 
-from app.db.models import InventoryStatus, BookingStatus, PaymentStatus
+from ..db.models import InventoryStatus, BookingStatus, PaymentStatus
 
 
 # =====================================================

@@ -5,7 +5,7 @@ from typing import Optional, Sequence
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Inventory, InventoryStatus
+from ..db.models import Inventory, InventoryStatus
 from .interfaces import IInventoryRepo
 
 

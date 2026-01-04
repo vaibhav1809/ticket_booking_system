@@ -6,8 +6,9 @@ from typing import Optional
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Booking, BookingStatus
+from ..db.models import Booking, BookingStatus
 from .interfaces import IBookingsRepo
+
 
 class BookingsRepo(IBookingsRepo):
     """Repository for booking operations."""

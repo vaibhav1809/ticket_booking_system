@@ -5,7 +5,7 @@ from __future__ import annotations
 from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Event
+from ..db.models import Event
 from .interfaces import IEventsRepo
 
 

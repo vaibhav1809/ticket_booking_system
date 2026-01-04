@@ -7,7 +7,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Show
+from ..db.models import Show
 from .interfaces import IShowsRepo
 
 

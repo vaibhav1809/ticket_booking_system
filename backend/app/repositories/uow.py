@@ -15,19 +15,19 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-from app.repositories.interfaces import IAsyncUnitOfWork
+from .interfaces import IAsyncUnitOfWork
 
 # Repo implementations (you said these are already separated)
-from app.repositories.users_repo import UsersRepo
-from app.repositories.events_repo import EventsRepo
-from app.repositories.venues_repo import VenuesRepo
-from app.repositories.shows_repo import ShowsRepo
-from app.repositories.pricings_repo import PricingsRepo
-from app.repositories.inventory_repo import InventoryRepo
-from app.repositories.bookings_repo import BookingsRepo
-from app.repositories.payments_repo import PaymentsRepo
-from app.repositories.tickets_repo import TicketsRepo
-from app.repositories.reads_repo import ReadsRepo
+from .users_repo import UsersRepo
+from .events_repo import EventsRepo
+from .venues_repo import VenuesRepo
+from .shows_repo import ShowsRepo
+from .pricings_repo import PricingsRepo
+from .inventory_repo import InventoryRepo
+from .bookings_repo import BookingsRepo
+from .payments_repo import PaymentsRepo
+from .tickets_repo import TicketsRepo
+from .reads_repo import ReadsRepo
 
 
 class RepositoryError(Exception):
