@@ -1,3 +1,4 @@
+BEGIN;
 DROP SCHEMA public CASCADE;
 CREATE SCHEMA public;
 GRANT ALL ON SCHEMA public TO postgres;
@@ -27,7 +28,7 @@ CREATE TABLE "venue_sections" (
 
 CREATE TABLE "users" (
   "user_id" SERIAL,
-  "email_id" varchar(20) unique,
+  "email_id" varchar(50) unique,
   "phone" varchar(20) unique,
   "first_name" varchar(50),
   "last_name" varchar(50),
@@ -153,3 +154,5 @@ CREATE TABLE "tickets" (
     FOREIGN KEY ("booking_id")
       REFERENCES "bookings"("booking_id")
 );
+
+COMMIT;
