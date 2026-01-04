@@ -1,4 +1,6 @@
 import sys
+from typing import Optional
+
 from redis.asyncio import Redis
 
 from ..config import log, CONFIG
@@ -7,7 +9,7 @@ __all__ = ["redis_client"]
 
 
 class RedisClient:
-    _client: Redis | None = None
+    _client: Optional[Redis] = None
 
     @classmethod
     def get_client(cls) -> Redis:
@@ -25,4 +27,4 @@ class RedisClient:
         return cls._client
 
 
-redis_client = RedisClient.get_client()
+redis_client: Redis = RedisClient.get_client()

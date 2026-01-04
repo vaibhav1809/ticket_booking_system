@@ -103,7 +103,7 @@ CREATE TABLE "show_pricings" (
       REFERENCES "venue_sections"("section_id")
 );
 
-CREATE TYPE inventory_status AS ENUM ('available', 'booked', 'not_available');
+CREATE TYPE inventory_status AS ENUM ('available', 'not_available');
 CREATE TABLE "inventories" (
   "show_id" int4,
   "seat_id" int4,
