@@ -28,7 +28,7 @@ async def reserve_seats(
     return JSONResponse(status_code=status.HTTP_202_ACCEPTED, content=response_payload)
 
 
-@router.put("/book")
+@router.post("")
 @enable_auth
 async def book_a_seat(
     request: Request,
