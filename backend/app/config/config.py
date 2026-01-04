@@ -45,6 +45,7 @@ class Config:
         self.version: str = data.get("version") or "0.1.0"
         self.description: str = data.get("description") or "API documentation"
         self.api_v1_str: str = data.get("api_v1_str") or "/api/v1"
+        self.seat_lock_ttl_seconds: int = data.get("seat_lock_ttl_seconds") or 600
 
         self.postgres_host = data.get("postgres_host")
         self.postgres_port = data.get("postgres_port")
@@ -52,6 +53,9 @@ class Config:
         self.postgres_password = data.get("postgres_password")
         self.postgres_db = data.get("postgres_db")
 
+        self.redis_host = data.get("redis_host")
+        self.redis_port = data.get("redis_port")
+        self.redis_password = data.get("redis_password")
 
 def _parse_env_file(path: Path) -> Dict[str, Any]:
     values: Dict[str, Any] = {}
