@@ -1,85 +1,60 @@
 import { useNavigate } from "react-router-dom";
-import { useBooking, Event } from "../context/BookingContext";
-import { useState } from "react";
+import { useBooking, Event, Event2 } from "../context/BookingContext";
+import { useCallback, useEffect, useState } from "react";
 import { Search } from "lucide-react";
+import { fetchShows } from "../utils/api";
 
-const MOCK_EVENTS: Event[] = [
-  {
-    id: "1",
-    title: "Rock Concert 2026",
-    date: "2026-02-15",
-    time: "19:00",
-    venue: "Madison Square Garden",
-    price: 85,
-    category: "Music",
-    image:
-      "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=800&h=600&fit=crop",
-  },
-  {
-    id: "2",
-    title: "Comedy Night Live",
-    date: "2026-02-20",
-    time: "20:00",
-    venue: "The Comedy Store",
-    price: 45,
-    category: "Comedy",
-    image:
-      "https://images.unsplash.com/photo-1585699324551-f6c309eedeca?w=800&h=600&fit=crop",
-  },
-  {
-    id: "3",
-    title: "Broadway Musical",
-    date: "2026-03-01",
-    time: "18:30",
-    venue: "Broadway Theatre",
-    price: 120,
-    category: "Theatre",
-    image:
-      "https://images.unsplash.com/photo-1503095396549-807759245b35?w=800&h=600&fit=crop",
-  },
-  {
-    id: "4",
-    title: "Sports Championship",
-    date: "2026-03-10",
-    time: "17:00",
-    venue: "Sports Arena",
-    price: 95,
-    category: "Sports",
-    image:
-      "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&h=600&fit=crop",
-  },
-  {
-    id: "5",
-    title: "Jazz Festival",
-    date: "2026-03-15",
-    time: "19:30",
-    venue: "Blue Note Jazz Club",
-    price: 65,
-    category: "Music",
-    image:
-      "https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=800&h=600&fit=crop",
-  },
-  {
-    id: "6",
-    title: "Art Exhibition",
-    date: "2026-03-20",
-    time: "10:00",
-    venue: "Metropolitan Museum",
-    price: 30,
-    category: "Art",
-    image:
-      "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=800&h=600&fit=crop",
-  },
-];
+const DEFAULT_CATEGORY = "all";
+const DEFAULT_CITY = "Bangalore";
+const getEventImagePath = (eventId: string) => {
+  return `/${eventId}.jpg`;
+};
 
 export function HomePage() {
   const navigate = useNavigate();
   const { setSelectedEvent, loggedInUser, setLoggedInUser } = useBooking();
   const [searchQuery, setSearchQuery] = useState("");
+  const [events, setEvents] = useState<Event2[]>([]);
 
-  const handleEventClick = (event: Event) => {
-    setSelectedEvent(event);
-    navigate("/info");
+  const fetchData = useCallback(async () => {
+    try {
+      const shows: Event2[] = await fetchShows({
+        category: DEFAULT_CATEGORY,
+        city: DEFAULT_CITY,
+        token: loggedInUser ?? "demo-user",
+      });
+      setEvents(shows);
+    } catch (error) {
+      console.error("Failed to load shows", error);
+    }
+  }, [loggedInUser]);
+
+  useEffect(() => {
+    void fetchData();
+  }, [fetchData]);
+
+  const mapShowToSelectedEvent = (show: Event2): Event => {
+    const startTime = new Date(show.start_time);
+    const time = startTime.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    return {
+      id: String(show.show_id),
+      title: show.title,
+      date: startTime.toISOString(),
+      time,
+      venue: show.venue_name,
+      price: show.min_price,
+      category: show.category,
+      image: getEventImagePath(show.event_id.toString()),
+    };
+  };
+
+  const handleEventClick = (event: Event2) => {
+    setSelectedEvent(mapShowToSelectedEvent(event));
+    navigate(`/info/${event.show_id}`);
   };
 
   const handleLogout = () => {
@@ -88,12 +63,12 @@ export function HomePage() {
   };
 
   // Filter events based on search query
-  const filteredEvents = MOCK_EVENTS.filter((event) => {
+  const filteredEvents = events.filter((event) => {
     const query = searchQuery.toLowerCase();
     return (
       event.title.toLowerCase().includes(query) ||
       event.category.toLowerCase().includes(query) ||
-      event.venue.toLowerCase().includes(query)
+      event.venue_name.toLowerCase().includes(query)
     );
   });
 
@@ -176,12 +151,12 @@ export function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredEvents.map((event) => (
               <div
-                key={event.id}
+                key={event.show_id}
                 onClick={() => handleEventClick(event)}
                 className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow cursor-pointer"
               >
                 <img
-                  src={event.image}
+                  src={getEventImagePath(event.event_id.toString())}
                   alt={event.title}
                   className="w-full h-48 object-cover"
                 />
@@ -190,13 +165,20 @@ export function HomePage() {
                     <span className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded">
                       {event.category}
                     </span>
-                    <span className="text-purple-600">${event.price}</span>
+                    <span className="text-purple-600">
+                      {event.currency} {event.min_price}
+                    </span>
                   </div>
                   <h3 className="text-xl mb-2">{event.title}</h3>
                   <div className="text-sm text-gray-600 space-y-1">
-                    <p>📅 {new Date(event.date).toLocaleDateString()}</p>
-                    <p>🕐 {event.time}</p>
-                    <p>📍 {event.venue}</p>
+                    <p>{new Date(event.start_time).toDateString()}</p>
+                    <p>
+                      {new Date(event.start_time).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                    <p>{event.venue_name}</p>
                   </div>
                 </div>
               </div>

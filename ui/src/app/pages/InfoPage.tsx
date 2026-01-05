@@ -1,18 +1,49 @@
-import { useNavigate } from "react-router-dom";
-import { useBooking } from "../context/BookingContext";
-import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useBooking, ShowDetails } from "../context/BookingContext";
+import { useCallback, useEffect, useState } from "react";
+import { fetchShowDetails } from "../utils/api";
 
 export function InfoPage() {
   const navigate = useNavigate();
-  const { selectedEvent, setUserInfo } = useBooking();
+  const { showId } = useParams();
+  const { selectedEvent, setUserInfo, loggedInUser } = useBooking();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [showDetails, setShowDetails] = useState<ShowDetails | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  if (!selectedEvent) {
-    navigate("/home");
-    return null;
-  }
+  const getEventImagePath = (eventId: number) => {
+    return `/${eventId}.jpg`;
+  };
+
+  const fetchData = useCallback(async () => {
+    if (!showId) {
+      navigate("/home");
+      return;
+    }
+
+    setIsLoading(true);
+    setLoadError(null);
+
+    try {
+      const details = await fetchShowDetails({
+        showId,
+        token: loggedInUser ?? "demo-user",
+      });
+      setShowDetails(details);
+    } catch (error) {
+      console.error("Failed to load show details", error);
+      setLoadError("Unable to load event details right now.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [showId, loggedInUser, navigate]);
+
+  useEffect(() => {
+    void fetchData();
+  }, [fetchData]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,59 +51,74 @@ export function InfoPage() {
     navigate("/seat");
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl text-purple-600">Ticket Booking</h1>
-          <button
-            onClick={() => navigate("/home")}
-            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900"
-          >
-            ← Back to Events
-          </button>
-        </div>
-      </header>
+  const selectedEventPrice =
+    (selectedEvent as { price?: number; min_price?: number } | null)?.price ??
+    (selectedEvent as { min_price?: number } | null)?.min_price;
+  const selectedEventCurrency =
+    (selectedEvent as { currency?: string } | null)?.currency ?? "INR";
 
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  const content = () => {
+    if (!showDetails) {
+      const message =
+        isLoading && !loadError
+          ? "Loading event details..."
+          : loadError || "Event details not available.";
+
+      return (
+        <div className="bg-white rounded-lg shadow-md p-6 text-center text-gray-600">
+          {message}
+        </div>
+      );
+    }
+
+    const startTime = new Date(showDetails.start_time);
+    const timeLabel = startTime.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    return (
+      <>
         <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
           <img
-            src={selectedEvent.image}
-            alt={selectedEvent.title}
+            src={getEventImagePath(showDetails.event_id)}
+            alt={showDetails.title}
             className="w-full h-64 object-cover"
           />
           <div className="p-6">
             <div className="mb-4">
               <span className="text-xs px-3 py-1 bg-purple-100 text-purple-700 rounded">
-                {selectedEvent.category}
+                {showDetails.category}
               </span>
             </div>
-            <h2 className="text-3xl mb-4">{selectedEvent.title}</h2>
+            <h2 className="text-3xl mb-4">{showDetails.title}</h2>
             <div className="grid grid-cols-2 gap-4 text-gray-700 mb-6">
               <div>
                 <p className="text-sm text-gray-500 mb-1">Date</p>
-                <p>{new Date(selectedEvent.date).toLocaleDateString()}</p>
+                <p>{startTime.toLocaleDateString()}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500 mb-1">Time</p>
-                <p>{selectedEvent.time}</p>
+                <p>{timeLabel}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500 mb-1">Venue</p>
-                <p>{selectedEvent.venue}</p>
+                <p>{showDetails.venue_name}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500 mb-1">Price</p>
-                <p className="text-purple-600">${selectedEvent.price}</p>
+                <p className="text-purple-600">
+                  {selectedEventPrice !== undefined
+                    ? `${selectedEventCurrency} ${selectedEventPrice}`
+                    : "Pricing unavailable"}
+                </p>
               </div>
             </div>
             <div className="border-t pt-4">
               <h3 className="mb-2">About This Event</h3>
               <p className="text-gray-600 text-sm">
-                Join us for an unforgettable experience at {selectedEvent.title}
-                . This event promises to deliver entertainment, excitement, and
+                Join us for an unforgettable experience at {showDetails.title}.
+                This event promises to deliver entertainment, excitement, and
                 memories that will last a lifetime. Don't miss out on this
                 amazing opportunity!
               </p>
@@ -145,6 +191,28 @@ export function InfoPage() {
             </button>
           </form>
         </div>
+      </>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+          <h1 className="text-2xl text-purple-600">Ticket Booking</h1>
+          <button
+            onClick={() => navigate("/home")}
+            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900"
+          >
+            ← Back to Events
+          </button>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {content()}
       </main>
     </div>
   );
