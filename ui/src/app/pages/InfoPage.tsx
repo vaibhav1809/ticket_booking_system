@@ -1,18 +1,22 @@
-import { useNavigate, useParams } from "react-router-dom";
-import { useBooking, ShowDetails } from "../context/BookingContext";
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+
+import { useBooking, ShowDetails } from "../context/BookingContext";
 import { fetchShowDetails } from "../utils/api";
 
 export function InfoPage() {
   const navigate = useNavigate();
   const { showId } = useParams();
   const { selectedEvent, setUserInfo, loggedInUser } = useBooking();
+  
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  
   const [showDetails, setShowDetails] = useState<ShowDetails | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
 
   const getEventImagePath = (eventId: number) => {
     return `/${eventId}.jpg`;

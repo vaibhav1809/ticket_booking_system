@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { BookingProvider } from "./context/BookingContext";
-import { LoginPage } from "./pages/LoginPage";
 import { HomePage } from "./pages/HomePage";
 import { InfoPage } from "./pages/InfoPage";
 import { SeatPage } from "./pages/SeatPage";
@@ -11,8 +10,8 @@ export default function App() {
     <BrowserRouter>
       <BookingProvider>
         <Routes>
-          <Route path="/" element={<LoginPage />} />
-          <Route path="/home" element={<HomePage />} />
+          {/* <Route path="/" element={<LoginPage />} /> */}
+          <Route path="/" element={<HomePage />} />
           <Route path="/info/:showId" element={<InfoPage />} />
           <Route path="/seat" element={<SeatPage />} />
           <Route path="/payment" element={<PaymentPage />} />
